@@ -17,6 +17,7 @@ class CubeService:
         self.target = target
         self.server = server
         self.dimensions = DimensionService(source=self.source, target=self.target, server=self.server)
+        view="Default" 
 
     def copy_cube(self, cube: str, item: str, deployment: str):
         start_time = datetime.datetime.now()
@@ -43,6 +44,14 @@ class CubeService:
                                                                                            '%Y-%m-%d %H:%M:%S')
                 cellset[(deployment, item, "Deployment Duration")] = str(duration)
                 self.server.cubes.cells.write_values('System - Deployments', cellset)
+
+		#Get data                
+		viewcelldata = server.cubes.cells.execute_view(cube_name=cube,view_name=view)
+
+		#Write data
+		server.cubes.cells.write_values(cube, viewcelldata)
+                
+     
             else:
                 return "Source cube does not exist"
         except TM1pyException as t:
