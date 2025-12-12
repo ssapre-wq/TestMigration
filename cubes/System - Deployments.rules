@@ -1,0 +1,10 @@
+FEEDSTRINGS;
+SKIPCHECK;
+['All Items', {'Name', 'Owner', 'Source', 'Target', 'Active','Deployment Status', 'Deployment Start', 'Deployment End', 'Deployment Duration'}] = S: STET;
+['All Items'] = S: '';
+['Owner'] = S: '';
+# [{'Copy Attributes', 'Copy Subsets'}] = S: IF(DB('System - Deployments',!Syustem - Deployments,!System - Deployment Items,'Type') @<> 'Dimension', '', STET);
+[{'Parameter 1','Parameter 2','Parameter 3','Parameter 4','Parameter 5','Parameter 6','Parameter 7','Parameter 8','Parameter 9','Parameter 10'}] = S: IF(DB('System - Deployments',!Deployments,!Deployment Items,'Type') @<> 'RunTI', '', STET);
+[{'Source', 'Target'}] = S: '';
+
+FEEDERS;

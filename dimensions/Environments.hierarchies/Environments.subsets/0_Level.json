@@ -1,0 +1,6 @@
+{
+	"@type":"Subset",
+	"Name":"0_Level",
+	"Alias":"MEMBER_NAME",
+	"Expression":"{TM1FILTERBYLEVEL(TM1SUBSETALL([Environments].[Environments]) , 0)}"
+}

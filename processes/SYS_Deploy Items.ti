@@ -3,7 +3,7 @@
 #****Begin: Generated Statements***
 #****End: Generated Statements****
 
-#-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
+#Region ----------------------------------- HEADER ------------------------------------------------#
 # Process:          SYS_Deploy Items
 # Author:           Chad Harvey
 # Date Created:     09.19.2021
@@ -12,10 +12,14 @@
 
 # PA Modification - Swapnil Sapre
 
-#-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
+########################################################
+# Migration Utility Section
+########################################################
 
-#--------------- Constants ---------------#
-cCube = 'SYS_Deployments';
+#EndRegion
+
+#Region --------------- Constants ---------------#
+cCube = 'System - Deployments';
 cProcess = GetProcessName;
 cUser = NumberToString(DIMIX('}Clients', TM1USER));
 cTimeStamp = TIMST(now, '\Y\m\d\h\i\s');
@@ -24,16 +28,20 @@ cView = expand('%cProcess%.%cUser%.%cTimeStamp%.%cRandomInt%');
 cEnv = 'SYS_Environments';
 cTab0 = '';
 cTab1 = cTab0 | '     ';
+#EndRegion
 
-#--------------- Variables ---------------#
+#Region --------------- Variables ---------------#
 nTemp = 1;
 nErrors = 0;
 nHeader = 0;
 sDrive = CellGetS('SYS_Admin_Parameters', 'Drive', 'String');
 sDir = CellGetS('SYS_Admin_Parameters', 'Export Directory', 'String');
 sProgDir = CellGetS('SYS_Admin_Parameters', 'Programs Directory', 'String');
+#EndRegion
 
-#--------------- Error Handling ---------------#
+t_failure_status = CellGetS( 'Configuration_Lookup_System','FailureStatus', 'Other', 'String' );
+
+#Region --------------- Error Handling ---------------#
 IF(pDeployment @= '');
     nError = 1;
     sMessage = 'pDeployment not supplied.';
@@ -45,18 +53,20 @@ ENDIF;
 IF(nError = 1);
     ProcessQuit;
 ENDIF;
+#EndRegion
 
 #--------------- Begin Prolog Processing ---------------#
 nStart = now;
 sStart = TIMST(nStart, '\Y-\m-\d \h:\i:\s');
 
-#----- Check if Deployment is Active
+#Region ----- Check if Deployment is Active
 sActive = CellGetS(cCube, pDeployment, 'All Items', 'Active');
 IF(sActive @= 'No');
     sMessage = expand('ERROR: %pDeployment% is not active exiting');
     CellPutS(sMessage, cCube, pDeployment, 'All Items', 'Deployment Status');
     ProcessBreak;
 ENDIF;
+#EndRegion
 
 IF(ViewExists(cCube, cView) = 1);
     ViewDestroy(cCube, cView);
@@ -66,7 +76,7 @@ ViewExtractSkipZeroesSet(cCube, cView, 1);
 ViewExtractSkipCalcsSet(cCube, cView, 0);
 ViewExtractSkipRuleValuesSet(cCube, cView, 0);
 
-#----- Subset Processing
+#Region ----- Subset Processing
 nLoop = 1;
 nMax = CubeDimensionCountGet(cCube);
 WHILE(nLoop <= nMax);
@@ -96,12 +106,14 @@ WHILE(nLoop <= nMax);
     ViewSubsetAssign(cCube, cView, sDim, cView);
     nLoop = nLoop + 1;
 END;
+#EndRegion
 
 #----- Assign View to Process
 DatasourceType = 'VIEW';
 DatasourceNameforServer = cCube;
 DatasourceCubeView = cView;
 DatasourceASCIIQuoteCharacter = '';
+
 #endregion
 #region Metadata
 
@@ -115,82 +127,68 @@ DatasourceASCIIQuoteCharacter = '';
 
 #--------------- Variables ---------------#
 sTitle = CellGetS(cCube, pDeployment, 'All Items', 'Name');
-sFile = expand('%sDrive%%sDir%%cProcess%_%sTitle%_%cTimeStamp%.yml');
+sFile = expand('%sProgDir%_%sTitle%_%cTimeStamp%.yml');
 sActive = CellGetS(cCube, pDeployment, vItems, 'Active');
 sParams = '';
 
 IF(nHeader = 0);
     #----- Retrieve Promotion Server Information
-    sCloud = CellGetS(cEnv, 'Deployment', 'Cloud');
-    IF(sCloud @= 'True');
-        sURL = CellGetS(cEnv, 'Deployment', 'Base URL');
-        sNamespace = CellGetS(cEnv, 'Deployment', 'Namespace');
-        sSSL = CellGetS(cEnv, 'Deployment', 'SSL');
-        sVerify = CellGetS(cEnv, 'Deployment', 'Verify');
-        sAsync = CellGetS(cEnv, 'Deployment', 'Async-Requests-Mode');
-        sSecret = CellGetS(cEnv, 'Deployment', 'Secret Name');
-        ASCIIOutput(sFile, expand('%cTab0%Server: {base_url: %sURL%, ssl: %sSSL%, namespace: %sNameSpace%, verify: %sVerify%, async_requests_mode: %sAsync%, Secret: %sSecret%}'));
-        # Our environemnts are all on cloud so this else part may not be required
-    ELSE;
-        sAddress = CellGetS(cEnv, 'Deployment', 'Address');
-        sPort = CellGetS(cEnv, 'Deployment', 'Port');
-        sSSL = CellGetS(cEnv, 'Deployment', 'SSL');
-        sNamespace = CellGetS(cEnv, 'Deployment', 'Namespace');
-        sGateway = CellGetS(cEnv, 'Deployment', 'Gateway');
-        sSecret = CellGetS(cEnv, 'Deployment', 'Secret Name');
-        ASCIIOutput(sFile, expand('%cTab0%Server: {address: %sAddress%, port: %sport%, ssl: %sSSL%, namespace: %sNamespace%, gateway: %sGateway%, Secret: %sSecret%}'));
-    ENDIF;
+    sURL = CellGetS(cEnv, 'Deployment', 'Base URL');
+    sNamespace = CellGetS(cEnv, 'Deployment', 'Namespace');
+    sSSL = CellGetS(cEnv, 'Deployment', 'SSL');
+    sVerify = CellGetS(cEnv, 'Deployment', 'Verify');
+    sAsync = CellGetS(cEnv, 'Deployment', 'Async-Requests-Mode');
+    sSecret = CellGetS(cEnv, 'Deployment', 'Secret Name');
+    ASCIIOutput(sFile, expand('%cTab0%Server: {base_url: %sURL%, ssl: %sSSL%, namespace: %sNameSpace%, verify: %sVerify%, async_requests_mode: %sAsync%, Secret: %sSecret%}'));
+
+    ####################################################
+    # Get information for source environment
+    ####################################################
 
     sSource = CellGetS(cCube, pDeployment, 'All Items', 'Source');
     sCloud = CellGets(cEnv, sSource, 'Cloud');
-    IF(sCloud @= 'True');
-        sURL = CellGetS(cEnv, sSource, 'Base URL');
-        sNamespace = CellGetS(cEnv, sSource, 'Namespace');
-        sSSL = CellGetS(cEnv, sSource, 'SSL');
-        sVerify = CellGetS(cEnv, sSource, 'Verify');
-        sAsync = CellGetS(cEnv, sSource, 'Async-Requests-Mode');
-        sSecret = CellGetS(cEnv, sSource, 'Secret Name');
-        ASCIIOutput(sFile, expand('%cTab0%Source: {base_url: %sURL%, ssl: %sSSL%, namespace: %sNameSpace%, verify: %sVerify%, async_requests_mode: %sAsync%, Secret: %sSecret%}'));
-        # Our environemnts are all on cloud so this else part may not be required
-    ELSE;
-        sAddress = CellGetS(cEnv, sSource, 'Address');
-        sPort = CellGetS(cEnv, sSource, 'Port');
-        sSSL = CellGetS(cEnv, sSource, 'SSL');
-        sNamespace = CellGetS(cEnv, sSource, 'Namespace');
-        sGateway = CellGetS(cEnv, sSource, 'Gateway');
-        sSecret = CellGetS(cEnv, sSource, 'Secret Name');
-        ASCIIOutput(sFile, expand('%cTab0%Source: {address: %sAddress%, port: %sport%, ssl: %sSSL%, namespace: %sNamespace%, gateway: %sGateway%, Secret: %sSecret%}'));
-    ENDIF;
+
+
+    sURL = CellGetS(cEnv, sSource, 'Base URL');
+    sNamespace = CellGetS(cEnv, sSource, 'Namespace');
+    sSSL = CellGetS(cEnv, sSource, 'SSL');
+    sVerify = CellGetS(cEnv, sSource, 'Verify');
+    sAsync = CellGetS(cEnv, sSource, 'Async-Requests-Mode');
+    sSecret = CellGetS(cEnv, sSource, 'Secret Name');
+    ASCIIOutput(sFile, expand('%cTab0%Source: {base_url: %sURL%, ssl: %sSSL%, namespace: %sNameSpace%, verify: %sVerify%, async_requests_mode: %sAsync%, Secret: %sSecret%}'));
+
+    ####################################################
+    # Get information for source environment
+    ####################################################
 
     sTarget = CellGetS(cCube, pDeployment, 'All Items', 'Target');
     sCloud = CellGets(cEnv,sTarget, 'Cloud');
-    IF(sCloud @= 'True');
-        sURL = CellGetS(cEnv, sTarget, 'Base URL');
-        sNamespace = CellGetS(cEnv, sTarget, 'Namespace');
-        sSSL = CellGetS(cEnv, sTarget, 'SSL');
-        sVerify = CellGetS(cEnv, sTarget, 'Verify');
-        sAsync = CellGetS(cEnv, sTarget, 'Async-Requests-Mode');
-        sSecret = CellGetS(cEnv, sTarget, 'Secret Name');
-        ASCIIOutput(sFile, expand('%cTab0%Target: {base_url: %sURL%, ssl: %sSSL%, namespace: %sNameSpace%, verify: %sVerify%, async_requests_mode: %sAsync%, Secret: %sSecret%}'));
-        # Our environemnts are all on cloud so this else part may not be required
-    ELSE;
-        sAddress = CellGetS(cEnv, sTarget, 'Address');
-        sPort = CellGetS(cEnv, sTarget, 'Port');
-        sSSL = CellGetS(cEnv, sTarget, 'SSL');
-        sNamespace = CellGetS(cEnv, sTarget, 'Namespace');
-        sGateway = CellGetS(cEnv, sTarget, 'Gateway');
-        sSecret = CellGetS(cEnv, sTarget, 'Secret Name');
-        ASCIIOutput(sFile, expand('%cTab0%Target: {address: %sAddress%, port: %sPort%, ssl: %sSSL%, namespace: %sNamespace%, gateway: %sGateway%, Secret: %sSecret%}'));
-    ENDIF;
+
+    sURL = CellGetS(cEnv, sTarget, 'Base URL');
+    sNamespace = CellGetS(cEnv, sTarget, 'Namespace');
+    sSSL = CellGetS(cEnv, sTarget, 'SSL');
+    sVerify = CellGetS(cEnv, sTarget, 'Verify');
+    sAsync = CellGetS(cEnv, sTarget, 'Async-Requests-Mode');
+    sSecret = CellGetS(cEnv, sTarget, 'Secret Name');
+    ASCIIOutput(sFile, expand('%cTab0%Target: {base_url: %sURL%, ssl: %sSSL%, namespace: %sNameSpace%, verify: %sVerify%, async_requests_mode: %sAsync%, Secret: %sSecret%}'));
+
     ASCIIOutput(sFile, expand('%cTab0%Title: %sTitle%'));
     ASCIIOutput(sFile, expand('%cTab0%Deployment: %vDeployments%'));
     ASCIIOutput(sFile, expand('%cTab0%Deployments:'));
+
     nHeader = 1;
+
 ENDIF;
+
+####################################################
+# Get information for objects to be migrated
+####################################################
+
 
 IF(sActive @= 'Yes');
     sType = CellGetS(cCube, pDeployment, vItems, 'Type');
     sName = CellGetS(cCube, pDeployment, vItems, 'Name');
+
     IF(sType @<> 'Dimension' & sType @<> 'View' & sType @<> 'Subset' & sType @<> 'RunTI');
         ASCIIOUTPUT(sFile, expand('%cTab1%%vItems%: {Type: %vValue%, Name: %sName%}'));
     ELSEIF(sType @= 'Dimension');
@@ -230,6 +228,7 @@ IF(sActive @= 'Yes');
 ELSE;
     ItemSkip;
 ENDIF;
+
 #endregion
 #region Epilog
 
@@ -237,7 +236,7 @@ ENDIF;
 #****End: Generated Statements****
 
 #--------------- Variables ---------------#
-sProg = expand('%sDrive%%sProgDir%PyPromote.exe "%sFile%"');
+sProg = expand('%sProgDir%PyPromote.exe %sFile%');
 
 ExecuteCommand(sProg, 1);
 

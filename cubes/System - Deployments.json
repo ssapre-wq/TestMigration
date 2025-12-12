@@ -1,0 +1,18 @@
+{
+	"@type":"Cube",
+	"Name":"System - Deployments",
+	"Dimensions":
+	[
+		{
+			"@id":"Dimensions('Deployments')"
+		},
+		{
+			"@id":"Dimensions('Deployment Items')"
+		},
+		{
+			"@id":"Dimensions('mDeployments')"
+		}
+	],
+	"Rules@Code.link":"System - Deployments.rules",
+	"Views@Code.links":[]
+}

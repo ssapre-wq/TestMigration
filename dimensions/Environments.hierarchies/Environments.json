@@ -10,10 +10,23 @@
 		{
 			"Name":"Test - ORI_CONSOL_UAT",
 			"Type":"Numeric"
+		},
+		{
+			"Name":"ORI_MIGRATE_TEST",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"Tm1",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"Deployment",
+			"Type":"Numeric"
 		}
 	],
 	"Subsets@Code.links":
 	[
+		"Environments.subsets/0_Level.json",
 		"Environments.subsets/Default.json"
 	]
 }
