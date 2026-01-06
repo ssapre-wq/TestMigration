@@ -19,15 +19,21 @@ class ProcessService:
                 if self.target.processes.exists(name=process):
                     self.target.processes.update(process=proc)
                     message = f"Target Process updated"
+		    error_counter=0
                 else:
                     self.target.processes.create(process=proc)
                     message = "Target Process created"
+                    error_counter=0
+             
             else:
                 message = "Source process does not exist"
+                error_counter=1
+ 
             end_time = datetime.now()
             duration = end_time - start_time
             cellset = dict()
             cellset[(deployment, item, "Deployment Status")] = message
+	    cellset[(deployment, item, "Deployment Error Counter")] = error_counter
             cellset[(deployment, item, "Deployment Start")] = datetime.strftime(start_time, '%Y-%m-%d %H:%M:%S')
             cellset[(deployment, item, "Deployment End")] = datetime.strftime(end_time, '%Y-%m-%d %H:%M:%S')
             cellset[(deployment, item, "Deployment Duration")] = str(duration)
@@ -43,15 +49,19 @@ class ProcessService:
                 if self.target.chores.exists(chore_name=chore):
                     self.target.chores.update(chore=ch)
                     message = "Target chore updated"
+                    error_counter=0
                 else:
                     self.target.chores.create(chore=ch)
                     message = "Target chore created"
+                    error_counter=0
             else:
                 message = "Source chore does not exist"
+                error_counter=1
             end_time = datetime.now()
             duration = end_time - start_time
             cellset = dict()
             cellset[(deployment, item, "Deployment Status")] = message
+            cellset[(deployment, item, "Deployment Error Counter")] = error_counter
             cellset[(deployment, item, "Deployment Start")] = datetime.strftime(start_time, '%Y-%m-%d %H:%M:%S')
             cellset[(deployment, item, "Deployment End")] = datetime.strftime(end_time, '%Y-%m-%d %H:%M:%S')
             cellset[(deployment, item, "Deployment Duration")] = str(duration)
@@ -65,12 +75,15 @@ class ProcessService:
             if self.target.processes.exists(name=process):
                 self.target.processes.execute(process_name=process, **params)
                 message = "Process executed"
+                error_counter=0
             else:
                 message = "Target process does not exist"
+                error_counter=1
             end_time = datetime.now()
             duration = end_time - start_time
             cellset = dict()
             cellset[(deployment, item, "Deployment Status")] = message
+cellset[(deployment, item, "Deployment Error Counter")] = error_counter
             cellset[(deployment, item, "Deployment Start")] = datetime.strftime(start_time, '%Y-%m-%d %H:%M:%S')
             cellset[(deployment, item, "Deployment End")] = datetime.strftime(end_time, '%Y-%m-%d %H:%M:%S')
             cellset[(deployment, item, "Deployment Duration")] = str(duration)
