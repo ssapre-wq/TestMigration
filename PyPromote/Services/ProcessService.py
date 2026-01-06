@@ -19,7 +19,7 @@ class ProcessService:
                 if self.target.processes.exists(name=process):
                     self.target.processes.update(process=proc)
                     message = f"Target Process updated"
-		    error_counter=0
+		            error_counter=0
                 else:
                     self.target.processes.create(process=proc)
                     message = "Target Process created"
@@ -33,7 +33,7 @@ class ProcessService:
             duration = end_time - start_time
             cellset = dict()
             cellset[(deployment, item, "Deployment Status")] = message
-	    cellset[(deployment, item, "Deployment Error Counter")] = error_counter
+	        cellset[(deployment, item, "Deployment Error Counter")] = error_counter
             cellset[(deployment, item, "Deployment Start")] = datetime.strftime(start_time, '%Y-%m-%d %H:%M:%S')
             cellset[(deployment, item, "Deployment End")] = datetime.strftime(end_time, '%Y-%m-%d %H:%M:%S')
             cellset[(deployment, item, "Deployment Duration")] = str(duration)
@@ -83,10 +83,11 @@ class ProcessService:
             duration = end_time - start_time
             cellset = dict()
             cellset[(deployment, item, "Deployment Status")] = message
-cellset[(deployment, item, "Deployment Error Counter")] = error_counter
+            cellset[(deployment, item, "Deployment Error Counter")] = error_counter
             cellset[(deployment, item, "Deployment Start")] = datetime.strftime(start_time, '%Y-%m-%d %H:%M:%S')
             cellset[(deployment, item, "Deployment End")] = datetime.strftime(end_time, '%Y-%m-%d %H:%M:%S')
             cellset[(deployment, item, "Deployment Duration")] = str(duration)
             self.server.cubes.cells.write_values('System - Deployments', cellset)
         except TM1pyException as t:
+
             print(t)
